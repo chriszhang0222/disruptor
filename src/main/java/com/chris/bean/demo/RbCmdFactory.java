@@ -1,4 +1,4 @@
-package com.chris.bean;
+package com.chris.bean.demo;
 
 public class RbCmdFactory {
 }

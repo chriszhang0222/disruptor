@@ -8,18 +8,22 @@ import com.alipay.sofa.jraft.rhea.options.RheaKVStoreOptions;
 import com.alipay.sofa.jraft.rhea.options.configured.MultiRegionRouteTableOptionsConfigured;
 import com.alipay.sofa.jraft.rhea.options.configured.PlacementDriverOptionsConfigured;
 import com.alipay.sofa.jraft.rhea.options.configured.RheaKVStoreOptionsConfigured;
+import com.chris.common.bean.CmdPack;
 import com.chris.common.checksum.ICheckSum;
 import com.chris.common.codec.IBodyCodec;
 import com.chris.common.codec.IMsgCodec;
+import com.chris.core.EngineApi;
 import io.vertx.core.Vertx;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.datagram.DatagramSocket;
+import io.vertx.core.datagram.DatagramSocketOptions;
+import lombok.*;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.List;
-import java.util.Properties;
+import java.net.Inet4Address;
+import java.net.NetworkInterface;
+import java.util.*;
+import java.util.zip.ZipFile;
 
 @Log4j2
 @Data
@@ -38,15 +42,23 @@ public class EngineConfig {
     private String fileName;
 
     @NonNull
+    @ToString.Exclude
     private IBodyCodec bodyCodec;
 
     @NonNull
+    @ToString.Exclude
     private ICheckSum cs;
 
     @NonNull
+    @ToString.Exclude
     private IMsgCodec msgCodec;
 
+    @ToString.Exclude
     private Vertx vertx = Vertx.vertx();
+
+    @Getter
+    @ToString.Exclude
+    private EngineApi engineApi = new EngineApi();
 
     @ToString.Exclude
     private final RheaKVStore orderkvStore = new DefaultRheaKVStore();
@@ -73,6 +85,56 @@ public class EngineConfig {
 
         orderkvStore.init(opts);
 
+        CmdPacketQueue.getInstance().init(orderkvStore, bodyCodec, engineApi);
+        //接收udp数据, 组播，多个udp终端接收同一个udp包
+        DatagramSocket socket = vertx.createDatagramSocket(new DatagramSocketOptions());
+        socket.listen(orderRecvPort, "0.0.0.0", asyncRes ->{
+            if(asyncRes.succeeded()){
+                socket.handler(packet -> {
+                   Buffer udpData = packet.data();
+                   if(udpData.length() > 0){
+                       try {
+                           CmdPack pack = bodyCodec.deserialize(udpData.getBytes(), CmdPack.class);
+                           CmdPacketQueue.getInstance().cache(pack);
+                       }catch (Exception e){
+                           log.error("decode packet error", e);
+                       }
+                   }else{
+                       log.error("recv empty udp packet from client: {}", packet.sender().toString());
+                   }
+                });
+                try{
+                    socket.listenMulticastGroup(orderRecvip, mainInterface().getName(), null, asyncRes2 -> {
+                        log.info("listen success {}", asyncRes2.succeeded());
+                    });
+                }catch (Exception e){
+                    log.error(e);
+                }
+            }else{
+                log.error("Listen failed,", asyncRes.cause());
+            }
+        });
+
+    }
+
+    private static NetworkInterface mainInterface() throws Exception{
+        final ArrayList<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+        final NetworkInterface networkInterface = interfaces.stream().filter(
+                t -> {
+                    try{
+                        final boolean isloopback = t.isLoopback();
+                        final boolean supportMulticast = t.supportsMulticast();
+                        final boolean isVirtualBox = t.getDisplayName().contains("VirtualBox")
+                                || t.getDisplayName().contains("Host-only");
+                        final boolean hasIpv4 = t.getInterfaceAddresses().stream().anyMatch(ia -> ia.getAddress() instanceof Inet4Address);
+                        return !isloopback & supportMulticast & !isVirtualBox & hasIpv4;
+                    }catch (Exception e){
+                        log.error(e);
+                    }
+                    return false;
+                }
+        ).sorted(Comparator.comparing(NetworkInterface::getName)).findFirst().orElse(null);
+        return networkInterface;
     }
 
     private void initDB() {
