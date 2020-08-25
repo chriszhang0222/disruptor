@@ -17,8 +17,10 @@ public class RbCmd {
 
     public long timestamp;
 
+    //member id
     public short mid;
 
+    //user id
     public long uid;
 
     public CmdType command;

@@ -14,6 +14,8 @@ import com.chris.common.codec.IBodyCodec;
 import com.chris.common.codec.IMsgCodec;
 import com.chris.core.EngineApi;
 import com.chris.db.DbQuery;
+import com.chris.handler.BaseHandler;
+import com.chris.handler.risk.ExistRiskHandler;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -76,7 +78,16 @@ public class EngineConfig {
 
     }
 
-    private void startEngine() {
+    private void startEngine() throws Exception{
+
+        //1.前置风控处理器
+        final BaseHandler riskHandler = new ExistRiskHandler(
+                dbQuery.queryAllBalance().keySet(),
+                dbQuery.queryAllStockCode()
+        );
+        //2. 撮合处理器
+        //3. 发布处理器
+
     }
 
     private void startSeqConn() throws Exception{

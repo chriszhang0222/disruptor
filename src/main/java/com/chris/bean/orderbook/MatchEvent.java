@@ -4,7 +4,9 @@ import com.chris.common.hq.MatchData;
 import com.chris.common.order.OrderStatus;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
+/*
+* Disruptor内部使用  (不同于MatchData）
+* */
 @NoArgsConstructor
 @ToString
 public class MatchEvent {
