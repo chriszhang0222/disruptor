@@ -13,12 +13,15 @@ import com.chris.common.checksum.ICheckSum;
 import com.chris.common.codec.IBodyCodec;
 import com.chris.common.codec.IMsgCodec;
 import com.chris.core.EngineApi;
+import com.chris.db.DbQuery;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.datagram.DatagramSocket;
 import io.vertx.core.datagram.DatagramSocketOptions;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.dbutils.QueryRunner;
 
 import java.net.Inet4Address;
 import java.net.NetworkInterface;
@@ -137,7 +140,13 @@ public class EngineConfig {
         return networkInterface;
     }
 
+    @Getter
+    @ToString.Exclude
+    private DbQuery dbQuery;
+
     private void initDB() {
+        QueryRunner runner = new QueryRunner(new ComboPooledDataSource());
+        dbQuery = new DbQuery(runner);
     }
 
     private void initConfig() throws Exception{
