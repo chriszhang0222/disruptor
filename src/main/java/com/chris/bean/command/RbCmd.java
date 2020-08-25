@@ -5,9 +5,9 @@ import com.chris.common.hq.L1MarketData;
 import com.chris.common.order.CmdType;
 import com.chris.common.order.OrderDirection;
 import com.chris.common.order.OrderType;
-import io.netty.util.collection.IntObjectHashMap;
 import lombok.Builder;
 import lombok.ToString;
+import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
 
 import java.util.List;
 
