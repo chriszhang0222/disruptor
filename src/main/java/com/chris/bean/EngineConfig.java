@@ -69,8 +69,14 @@ public class EngineConfig {
     public void startup() throws Exception{
         initConfig();
         initDB();
+
+        startEngine();
+        //连接排队机, 接收从排队机到达的udp 数据包
         startSeqConn();
 
+    }
+
+    private void startEngine() {
     }
 
     private void startSeqConn() throws Exception{
