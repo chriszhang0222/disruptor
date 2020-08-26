@@ -11,14 +11,19 @@ import com.alipay.sofa.jraft.rhea.options.configured.RheaKVStoreOptionsConfigure
 import com.chris.bean.orderbook.IOrderBook;
 import com.chris.bean.orderbook.OrderBookImpl;
 import com.chris.common.bean.CmdPack;
+import com.chris.common.bus.IBusSender;
+import com.chris.common.bus.MQTTBusSender;
 import com.chris.common.checksum.ICheckSum;
 import com.chris.common.codec.IBodyCodec;
 import com.chris.common.codec.IMsgCodec;
+import com.chris.common.hq.MatchData;
 import com.chris.core.EngineApi;
 import com.chris.db.DbQuery;
 import com.chris.handler.BaseHandler;
+import com.chris.handler.pub.PubHandler;
 import com.chris.handler.risk.ExistRiskHandler;
 import com.chris.handler.stock.StockHandler;
+import com.google.common.collect.Lists;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import io.protostuff.runtime.ArraySchemas;
 import io.vertx.core.Vertx;
@@ -29,6 +34,7 @@ import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.dbutils.QueryRunner;
 import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
+import org.eclipse.collections.impl.map.mutable.primitive.ShortObjectHashMap;
 
 import java.net.Inet4Address;
 import java.net.NetworkInterface;
@@ -73,14 +79,27 @@ public class EngineConfig {
     @ToString.Exclude
     private final RheaKVStore orderkvStore = new DefaultRheaKVStore();
 
+    @ToString.Exclude
+    private IBusSender busSender;
+
     public void startup() throws Exception{
         initConfig();
         initDB();
 
         startEngine();
+
+        //初始化发布总线
+        initPub();
+
+
         //连接排队机, 接收从排队机到达的udp 数据包
         startSeqConn();
 
+    }
+
+    private void initPub() {
+        busSender = new MQTTBusSender(pubIp, pubPort, msgCodec, vertx);
+        busSender.startUp();
     }
 
     private void startEngine() throws Exception{
@@ -96,6 +115,11 @@ public class EngineConfig {
         final BaseHandler matchHandler = new StockHandler(orderBookMap);
         //3. 发布处理器
 
+        ShortObjectHashMap<List<MatchData>> matcherEventMap = new ShortObjectHashMap<>();
+        for(short id: dbQuery.queryAllMemberIds()){
+            matcherEventMap.put(id, Lists.newArrayList());
+        }
+        final BaseHandler pubHandler = new PubHandler(matcherEventMap,this);
     }
 
     private void startSeqConn() throws Exception{

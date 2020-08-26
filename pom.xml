@@ -101,6 +101,13 @@
             <artifactId>eclipse-collections</artifactId>
             <version>10.4.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.vertx/vertx-mqtt -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-mqtt</artifactId>
+            <version>4.0.0-milestone5</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
