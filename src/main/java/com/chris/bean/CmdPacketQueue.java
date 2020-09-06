@@ -69,7 +69,7 @@ public class CmdPacketQueue {
     private long lastPackNo = -1;
 
     private void handle(CmdPack cmd) throws Exception{
-        log.info("recv:{}", cmd);
+        log.info("recv:{} in queue", cmd);
         //NACK 校验
         long packNo = cmd.getPackNo();
         if(packNo == lastPackNo + 1){

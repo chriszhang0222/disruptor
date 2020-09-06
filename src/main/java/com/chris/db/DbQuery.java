@@ -1,14 +1,17 @@
 package com.chris.db;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.dbutils.*;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.eclipse.collections.impl.map.mutable.primitive.IntObjectHashMap;
 import org.eclipse.collections.impl.map.mutable.primitive.LongLongHashMap;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import static com.chris.common.bean.MsgConstants.MULTI_FACTOR;
@@ -59,6 +62,13 @@ public class DbQuery {
         }
         return memberIds;
 
+    }
+
+    public static void main(String[] args) throws Exception{
+        ComboPooledDataSource cpds = new ComboPooledDataSource();
+        QueryRunner runner = new QueryRunner(cpds);
+        DbQuery query = new DbQuery(runner);
+        System.out.println(query.queryAllStockCode().max());
     }
 
 }

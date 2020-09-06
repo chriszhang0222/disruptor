@@ -19,6 +19,12 @@ public class OrderBookImpl implements IOrderBook{
     @NonNull
     private int code;
 
+    //key price
+    private final NavigableMap<Long, IOrderBucket> sellBuckets = new TreeMap<>();
+    private final NavigableMap<Long, IOrderBucket> buyBuckets = new TreeMap<>(Collections.reverseOrder());
+
+    private final LongObjectHashMap<Order> oidMap = new LongObjectHashMap<>();
+
 
     @Override
     public void fillCode(L1MarketData data) {
@@ -69,11 +75,6 @@ public class OrderBookImpl implements IOrderBook{
     }
 
 
-    //key price
-    private final NavigableMap<Long, IOrderBucket> sellBuckets = new TreeMap<>();
-    private final NavigableMap<Long, IOrderBucket> buyBuckets = new TreeMap<>(Collections.reverseOrder());
-
-    private final LongObjectHashMap<Order> oidMap = new LongObjectHashMap<>();
 
     @Override
     public CmdResultCode newOrder(RbCmd cmd) {

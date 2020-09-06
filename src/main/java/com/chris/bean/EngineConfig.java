@@ -18,6 +18,7 @@ import com.chris.common.codec.IBodyCodec;
 import com.chris.common.codec.IMsgCodec;
 import com.chris.common.hq.MatchData;
 import com.chris.core.EngineApi;
+import com.chris.core.EngineCore;
 import com.chris.db.DbQuery;
 import com.chris.handler.BaseHandler;
 import com.chris.handler.pub.PubHandler;
@@ -74,7 +75,7 @@ public class EngineConfig {
 
     @Getter
     @ToString.Exclude
-    private EngineApi engineApi = new EngineApi();
+    private EngineApi engineApi;
 
     @ToString.Exclude
     private final RheaKVStore orderkvStore = new DefaultRheaKVStore();
@@ -120,6 +121,11 @@ public class EngineConfig {
             matcherEventMap.put(id, Lists.newArrayList());
         }
         final BaseHandler pubHandler = new PubHandler(matcherEventMap,this);
+        engineApi = new EngineCore(
+                riskHandler,
+                matchHandler,
+                pubHandler
+        ).getApi();
     }
 
     private void startSeqConn() throws Exception{
@@ -146,6 +152,7 @@ public class EngineConfig {
                    Buffer udpData = packet.data();
                    if(udpData.length() > 0){
                        try {
+                           log.info("received data packet from udp port:{}", orderRecvPort);
                            CmdPack pack = bodyCodec.deserialize(udpData.getBytes(), CmdPack.class);
                            CmdPacketQueue.getInstance().cache(pack);
                        }catch (Exception e){

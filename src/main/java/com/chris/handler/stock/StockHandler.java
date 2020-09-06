@@ -21,6 +21,7 @@ public class StockHandler extends BaseHandler{
     public void onEvent(RbCmd cmd, long seq, boolean endOfbatch) throws Exception {
         if(cmd.resultCode.getCode() < 0){
             log.warn("cmd:{} didn't pass risk handler", cmd.oid);
+            return;
         }
         cmd.resultCode = processCmd(cmd);
     }
