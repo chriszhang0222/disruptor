@@ -22,6 +22,8 @@ public class CmdPacketQueue {
 
     private static volatile CmdPacketQueue instance = null;
 
+    private final BlockingQueue<CmdPack> recvCache = new LinkedBlockingQueue<>();
+
     private CmdPacketQueue(){}
 
     public static CmdPacketQueue getInstance(){
@@ -35,7 +37,6 @@ public class CmdPacketQueue {
         return instance;
     }
 
-    private final BlockingQueue<CmdPack> recvCache = new LinkedBlockingQueue<>();
 
     public void cache(CmdPack pack){
         recvCache.offer(pack);
@@ -83,7 +84,7 @@ public class CmdPacketQueue {
             //收到重复包
             log.warn("recv duplicate packid: {}", packNo);
         }else {
-            log.info("packNo from {} to {}, begin query from sequencer", lastPackNo + 1, packNo);
+            log.info("packNo from {} to {}, begin query from sequence", lastPackNo + 1, packNo);
             //请求缺失数据
             byte[] firstKey = new byte[8];
             Bits.putLong(firstKey, 0, lastPackNo + 1);

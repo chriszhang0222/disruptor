@@ -45,12 +45,12 @@ public class PubHandler extends BaseHandler {
                 // 1.五档行情
                 pubMarketData(cmd.marketDataMap);
                 // 2.某柜台单独消息
-                pubMatherData();
+                pubMatchData();
 
             }
     }
 
-    private void pubMatherData() {
+    private void pubMatchData() {
         if(matchEventMap.size() == 0){
             return;
         }
