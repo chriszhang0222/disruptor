@@ -87,8 +87,10 @@ public class EngineConfig {
         initConfig();
         initDB();
         startEngine();
+
         //初始化发布总线
         initPub();
+
         //连接排队机, 接收从排队机到达的udp 数据包
         startSeqConn();
 

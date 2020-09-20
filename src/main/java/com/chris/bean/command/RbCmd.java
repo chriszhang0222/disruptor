@@ -25,6 +25,7 @@ public class RbCmd {
 
     public CmdType command;
 
+    //stock code
     public int code;
 
     public OrderDirection direction;

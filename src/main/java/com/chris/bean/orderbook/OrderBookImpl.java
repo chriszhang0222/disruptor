@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 
 import java.util.*;
+import java.util.function.Function;
 
 @RequiredArgsConstructor
 public class OrderBookImpl implements IOrderBook{
@@ -177,5 +178,11 @@ public class OrderBookImpl implements IOrderBook{
         cmd.matchEventList.add(cancelEvent);
 
         return CmdResultCode.SUCCESS;
+    }
+
+    public static void main(String[] args) {
+
+        Function<String, Integer> func = Integer::parseInt;
+        func.apply("123");
     }
 }
